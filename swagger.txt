@@ -1,121 +1,20 @@
-openapi: 3.0.0
-info:
-  title: API de Usuarios
-  description: API para gestionar usuarios en una aplicación.
-  version: 1.0.0
-servers:
-  - url: http://localhost:8080/api
-    description: Servidor local de desarrollo
-paths:
-  /users:
-    get:
-      summary: Obtener lista de usuarios
-      responses:
-        '200':
-          description: Lista de usuarios
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-    post:
-      summary: Crear un nuevo usuario
-      requestBody:
-        description: Datos del usuario que se va a crear
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserInput'
-      responses:
-        '201':
-          description: Usuario creado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Solicitud incorrecta
-  /users/{userId}:
-    get:
-      summary: Obtener un usuario por ID
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          description: ID del usuario
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Datos del usuario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: Usuario no encontrado
-    put:
-      summary: Actualizar un usuario existente
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          description: ID del usuario
-          schema:
-            type: integer
-      requestBody:
-        description: Datos del usuario que se va a actualizar
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserInput'
-      responses:
-        '200':
-          description: Usuario actualizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: Usuario no encontrado
-    delete:
-      summary: Eliminar un usuario por ID
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          description: ID del usuario
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Usuario eliminado
-        '404':
-          description: Usuario no encontrado
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: Juan Perez
-        email:
-          type: string
-          example: juan.perez@example.com
-    UserInput:
-      type: object
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-      required:
-        - name
-        - email
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
+const app = express();
+const port = 8080;
+
+// Cargar el archivo YAML de OpenAPI
+const swaggerDocument = YAML.load(path.join(__dirname, '../openapi.yaml'));
+
+// Configurar Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Rutas
+const userRoutes = require('./routes/users');
+app.use('/api/users', userRoutes);
+
+app.listen(port, () => {
+    console.log(`Servidor corriendo en http://localhost:${port}`);
+});
